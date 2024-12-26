@@ -233,34 +233,52 @@ func (db *PebbleDB) NewBatch() Batch {
 }
 
 // Iterator implements DB.
+// Iterator implements DB.
 func (db *PebbleDB) Iterator(start, end []byte) (Iterator, error) {
-	//fmt.Println("PebbleDB.Iterator")
-	if (start != nil && len(start) == 0) || (end != nil && len(end) == 0) {
-		return nil, errKeyEmpty
-	}
-	o := pebble.IterOptions{
-		LowerBound: start,
-		UpperBound: end,
-	}
-	itr := db.db.NewIter(&o)
-	itr.First()
+    // Check for empty keys
+    if (start != nil && len(start) == 0) || (end != nil && len(end) == 0) {
+        return nil, errKeyEmpty
+    }
 
-	return newPebbleDBIterator(itr, start, end, false), nil
+    // Define iteration options
+    o := pebble.IterOptions{
+        LowerBound: start,
+        UpperBound: end,
+    }
+
+    // Call NewIter and handle the returned error
+    itr, err := db.db.NewIter(&o)
+    if err != nil {
+        return nil, err // Return the error if iteration creation fails
+    }
+    itr.First()
+
+    // Return the new iterator
+    return newPebbleDBIterator(itr, start, end, false), nil
 }
 
 // ReverseIterator implements DB.
 func (db *PebbleDB) ReverseIterator(start, end []byte) (Iterator, error) {
-	//fmt.Println("PebbleDB.ReverseIterator")
-	if (start != nil && len(start) == 0) || (end != nil && len(end) == 0) {
-		return nil, errKeyEmpty
-	}
-	o := pebble.IterOptions{
-		LowerBound: start,
-		UpperBound: end,
-	}
-	itr := db.db.NewIter(&o)
-	itr.Last()
-	return newPebbleDBIterator(itr, start, end, true), nil
+    // Check for empty keys
+    if (start != nil && len(start) == 0) || (end != nil && len(end) == 0) {
+        return nil, errKeyEmpty
+    }
+
+    // Define iteration options
+    o := pebble.IterOptions{
+        LowerBound: start,
+        UpperBound: end,
+    }
+
+    // Call NewIter and handle the returned error
+    itr, err := db.db.NewIter(&o)
+    if err != nil {
+        return nil, err // Return the error if iteration creation fails
+    }
+    itr.Last()
+
+    // Return the new reverse iterator
+    return newPebbleDBIterator(itr, start, end, true), nil
 }
 
 var _ Batch = (*pebbleDBBatch)(nil)
